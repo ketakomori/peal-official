@@ -30,6 +30,7 @@
   box-sizing: border-box;
   overflow-y: auto;
 
+  z-index: 20;  /* ←追加 */
   opacity: 0;               /* ← 透明スタート */
   pointer-events: none;     /* ← クリック不可 */
   transition: opacity 0.6s ease;  /* ← フェード速度 */
@@ -46,6 +47,7 @@
     cursor: pointer;
     font-size: 14px;
     letter-spacing: 2px;
+    z-index: 10;  /* ←追加 */
     padding: 20px 24px;   /* ← 当たり判定を拡張 */
     margin: -20px -24px;  /* ← 見た目の位置を戻す */
   }
@@ -209,8 +211,14 @@ function preload() {
   });
 }
 
+let c;
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  c = createCanvas(windowWidth, windowHeight);
+  // 👇 これが重要
+  c.style('position', 'fixed');
+  c.style('top', '0');
+  c.style('left', '0');
+  c.style('z-index', '0');
   background(242);
 }
 
