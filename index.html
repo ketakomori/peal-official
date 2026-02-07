@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+<title>peal – layered structure</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #f2f2f2;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+
+  #infoLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(240,240,240,0.96);
+  color: #111;
+  padding: 80px;
+  box-sizing: border-box;
+  overflow-y: auto;
+
+  opacity: 0;               /* ← 透明スタート */
+  pointer-events: none;     /* ← クリック不可 */
+  transition: opacity 0.6s ease;  /* ← フェード速度 */
+  }
+  #infoLayer.active {
+  opacity: 1;
+  pointer-events: auto;
+  }
+
+  #toggleInfo {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 20px 24px;   /* ← 当たり判定を拡張 */
+    margin: -20px -24px;  /* ← 見た目の位置を戻す */
+  }
+
+ #infoClose {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 28px;
+    padding: 10px;
+    background: none;
+    color: #111;   /* ← 修正 */
+    border: none;
+    cursor: pointer;
+  }
+
+  h1 {
+    font-weight: 500;
+    letter-spacing: 4px;
+  }
+
+  p {
+    max-width: 700px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<div id="toggleInfo">INFO</div>
+
+<div id="infoLayer">
+  <button id="infoClose">×</button>
+
+  <h1>peal</h1>
+  <img src="peallogomiddle.jpeg" alt="peal album cover" class="albumArt">
+  <p>
+  Listen here↓<br><br>
+  <a href="https://linkco.re/cZP15Rqx" target="_blank">
+  1st Mini Album peal
+  </a><br>
+  </p>
+
+  <p>peal is a Tokyo-based alternative band since 2024.</p>
+
+  <p>The band explores instability, resonance, and emotional layering through sound
+   blending ambient textures, organic noise, and minimal guitar phrases 
+   to construct temporary sonic structures that evolve over time.</p>
+
+  <p>Their music focuses on atmosphere rather than genre — 
+  creating spaces where sound accumulates, collide, and dissolve.</p>
+
+  <p>Each performance is an experiment in balance: 
+  how much weight a structure can hold before it begins to tremble.</p>
+
+  <br><br>
+  <p>Click anywhere on the screen to layer the sounds.</p>
+
+<hr style="margin:60px 0; border:none; border-top:1px solid #ccc;">
+
+<div id="snsLinks">
+  <h3>SNS</h3>
+  <div class="sns-item">
+    <a href="https://www.instagram.com/peal.band/" target="_blank">Instagram</a>
+  </div>
+  <div class="sns-item">
+    <a href="https://x.com/peal_band" target="_blank">X / Twitter</a>
+  </div>
+  <div class="sns-item">
+    <a href="https://www.youtube.com/@peal_band" target="_blank">YouTube</a>
+  </div>
+  <div class="sns-item">
+    <a href="https://open.spotify.com/intl-ja/artist/7fGy4icSbg4qj8DyGI8PD0" target="_blank">Spotify</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+  
+  const infoLayer = document.getElementById("infoLayer");
+  const toggleInfo = document.getElementById("toggleInfo");
+  const infoClose = document.getElementById("infoClose");
+
+// 開く
+  toggleInfo.addEventListener("click", () => {
+    infoLayer.classList.add("active");
+  });
+
+// ×で閉じる
+  infoClose.addEventListener("click", () => {
+    infoLayer.classList.remove("active");
+  });
+
+// 余白クリックで閉じる ← ここに追加
+infoLayer.addEventListener("click", (e) => {
+  if (e.target === infoLayer) {
+    infoLayer.classList.remove("active");
+  }
+});
+
+let layers = [];
+let currentLayerType = 0;
+let players = [];
+let layerCount = 0;
+
+function preload() {
+
+  players[0] = new Tone.Player("VSQSE_0037_crowded_street_02.mp3").toDestination();
+  players[0].volume.value = -18;  // 少し下げる
+
+  players[1] = new Tone.Player("hututukaambi1.mp3").toDestination();
+  players[1].volume.value = -2;  // 少し下げる
+
+  players[2] = new Tone.Player("hututukariff3.mp3").toDestination();
+  players[2].volume.value = -7;  // 少し下げる
+
+  players[3] = new Tone.Player("hututukajyorin2.mp3").toDestination();
+  players[3].volume.value = -17;  // 少し下げる
+
+  players[4] = new Tone.Player("VSQSE_0046_room_ambient_02.mp3").toDestination();
+  players[4].volume.value = -2;  // 少し下げる
+
+  players[5] = new Tone.Player("hututukaambi2.mp3").toDestination();
+  players[5].volume.value = -2;  // 少し下げる
+
+  players[6] = new Tone.Player("VSQSE_0546_station_01_ticket_gate.mp3").toDestination();
+  players[6].volume.value = -27;  // 少し下げる
+
+  players[7] = new Tone.Player("hututukaambi3.mp3").toDestination();
+  players[7].volume.value = -2;  // 少し下げる
+
+  players[8] = new Tone.Player("hututukastroke.mp3").toDestination();
+  players[8].volume.value = -2;  // 少し下げる
+
+  players[9] = new Tone.Player("hututukajyorin2.mp3").toDestination();
+  players[9].volume.value = -17;  // 少し下げる
+
+  players[10] = new Tone.Player("hututukaambi4.mp3").toDestination();
+  players[10].volume.value = -2;  // 少し下げる
+
+  players[11] = new Tone.Player("hututukaambi5.mp3").toDestination();
+  players[11].volume.value = -2;  // 少し下げる
+
+  players[12] = new Tone.Player("hututukariff2.mp3").toDestination();
+  players[12].volume.value = -16;  // 少し下げる
+
+  players[13] = new Tone.Player("hututukajyorin1.mp3").toDestination();
+  players[13].volume.value = -20;  // 少し下げる
+
+  players[14] = new Tone.Player("hututukaambi3.mp3").toDestination();
+  players[14].volume.value = -2;  // 少し下げる
+
+  players[15] = new Tone.Player("hututukaambi2.mp3").toDestination();
+  players[15].volume.value = -2;  // 少し下げる
+
+
+  players.forEach(p => {
+    p.loop = false;
+    
+  });
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  background(242);
+}
+
+function draw() {
+  background(242, 242, 242, 25);
+
+  for (let i = 0; i < layers.length; i++) {
+    layers[i].update();
+    layers[i].display();
+  }
+}
+
+async function handleInteraction() {
+
+  // Audioコンテキストを確実に開始
+  if (Tone.context.state !== 'running') {
+    await Tone.start();
+  }
+
+  // 音源が存在すれば再生
+  if (players[currentLayerType]) {
+    players[currentLayerType].start();
+  }
+
+  layers.push(new VisualLayer(currentLayerType));
+  layerCount++;
+
+  currentLayerType = (currentLayerType + 1) % players.length;
+}
+
+function mousePressed() {
+  handleInteraction();
+}
+
+function touchStarted() {
+  handleInteraction();
+  return false;
+}
+
+class VisualLayer {
+  constructor(type) {
+    // 回転
+    this.rotation = random(TWO_PI);
+    this.rotationSpeed = random(-0.005, 0.005); 
+
+    this.type = type;
+
+    this.x = random(width);
+    this.y = random(height);
+    this.size = random(80, 320);
+
+    this.shapeType = floor(random(7));
+
+    // 🎨 カラーパレット（RGB）
+    this.palette = [
+      [40, 90, 200],    // 青
+      [40, 160, 90],    // 緑
+      [130, 60, 180],   // 紫
+      [230, 140, 40],   // オレンジ
+      [240, 200, 40]    // 黄色
+    ];
+
+    // ランダムで1色選択
+    this.colorPick = random(this.palette);
+
+    this.r = this.colorPick[0];
+    this.g = this.colorPick[1];
+    this.b = this.colorPick[2];
+
+    this.alpha = random(30, 120);
+  
+   // 🌊 ランダム移動方向
+    this.angle = random(TWO_PI);
+    this.speed = random(0.1, 0.5);  // 穏やかな移動
+  }
+
+  update() {
+    this.x += cos(this.angle) * this.speed;
+    this.y += sin(this.angle) * this.speed;
+    this.rotation += this.rotationSpeed;
+
+    // 画面端で反転（漂い続ける）
+    if (this.x < 0 || this.x > width) {
+      this.angle = PI - this.angle;
+    }
+    if (this.y < 0 || this.y > height) {
+      this.angle = -this.angle;
+    }
+    // ゆるやかな方向変化（より自然に）
+  this.angle += random(-0.01, 0.01);
+
+  }
+
+  display() {
+  strokeJoin(ROUND);
+  strokeCap(ROUND);
+  push();
+
+  translate(this.x, this.y);
+  rotate(this.rotation);
+
+  if (this.shapeType === 0) {
+    noStroke();
+    fill(this.r, this.g, this.b, this.alpha);
+    ellipse(0, 0, this.size);
+  }
+
+  if (this.shapeType === 1) {
+    noStroke();
+    fill(this.r, this.g, this.b, this.alpha);
+    rectMode(CENTER);
+    rect(0, 0, this.size, this.size, this.size * 0.3);
+  }
+
+  if (this.shapeType === 2) {
+    noFill();
+    stroke(this.r, this.g, this.b, this.alpha);
+    circle(0, 0, this.size);
+  }
+
+  if (this.shapeType === 3) {
+    noStroke();
+    fill(this.r, this.g, this.b, this.alpha);
+    triangle(
+      -this.size/2, this.size/2,
+      this.size/2, this.size/2,
+      0, -this.size/2
+    );
+  }
+
+  if (this.shapeType === 4) {
+    stroke(this.r, this.g, this.b, this.alpha);
+    line(
+      -this.size/2,
+      0,
+      this.size/2,
+      0
+    );
+  }
+  if (this.shapeType === 5) {
+  noStroke();
+  fill(this.r, this.g, this.b, this.alpha);
+
+  beginShape();
+  for (let i = 0; i < 5; i++) {
+    let angle = TWO_PI * i / 5 - HALF_PI; 
+    let x = cos(angle) * this.size / 2;
+    let y = sin(angle) * this.size / 2;
+    vertex(x, y);
+  }
+  endShape(CLOSE);
+  }
+
+  if (this.shapeType === 6) {
+  noStroke();
+  fill(this.r, this.g, this.b, this.alpha);
+
+  beginShape();
+  for (let i = 0; i < 7; i++) {
+    let angle = TWO_PI * i / 7 - HALF_PI;
+    let x = cos(angle) * this.size / 2;
+    let y = sin(angle) * this.size / 2;
+    vertex(x, y);
+  }
+  endShape(CLOSE);
+}
+
+  pop();
+}
+
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+</script>
+
+</body>
+</html>
