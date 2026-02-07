@@ -162,18 +162,6 @@
   infoClose.addEventListener("touchstart", closeInfo, { passive: false });
   infoClose.addEventListener("click", closeInfo);
 
-  // 余白タップで閉じる
-  infoLayer.addEventListener(
-    "touchstart",
-    (e) => {
-      if (e.target === infoLayer) closeInfo(e);
-    },
-    { passive: false }
-  );
-
-  infoLayer.addEventListener("click", (e) => {
-    if (e.target === infoLayer) infoLayer.classList.remove("active");
-  });
 });
   
 
