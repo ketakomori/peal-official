@@ -128,26 +128,45 @@
 
 <script>
   
+  document.addEventListener("DOMContentLoaded", () => {
   const infoLayer = document.getElementById("infoLayer");
   const toggleInfo = document.getElementById("toggleInfo");
   const infoClose = document.getElementById("infoClose");
 
-// 開く
-  toggleInfo.addEventListener("click", () => {
+  function openInfo(e) {
+    e.preventDefault();
+    e.stopPropagation();
     infoLayer.classList.add("active");
-  });
+  }
 
-// ×で閉じる
-  infoClose.addEventListener("click", () => {
-    infoLayer.classList.remove("active");
-  });
-
-// 余白クリックで閉じる ← ここに追加
-infoLayer.addEventListener("click", (e) => {
-  if (e.target === infoLayer) {
+  function closeInfo(e) {
+    e.preventDefault();
+    e.stopPropagation();
     infoLayer.classList.remove("active");
   }
+
+  // INFOを開く（iOS Safari対策）
+  toggleInfo.addEventListener("touchstart", openInfo, { passive: false });
+  toggleInfo.addEventListener("click", openInfo);
+
+  // ×で閉じる
+  infoClose.addEventListener("touchstart", closeInfo, { passive: false });
+  infoClose.addEventListener("click", closeInfo);
+
+  // 余白タップで閉じる
+  infoLayer.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.target === infoLayer) closeInfo(e);
+    },
+    { passive: false }
+  );
+
+  infoLayer.addEventListener("click", (e) => {
+    if (e.target === infoLayer) infoLayer.classList.remove("active");
+  });
 });
+  
 
 let layers = [];
 let currentLayerType = 0;
